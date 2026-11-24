@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ajouter du contenu — IVOIR360</title>
+  <meta name="description" content="IVOIR360 : ajout de vidéos par l'équipe (musiques, interviews, documentaires, SnapNow).">
+  <meta name="robots" content="noindex">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Affiche tout de suite les bons boutons (membre, équipe) et le chat ouvert ou fermé d'après la dernière visite, sans attendre Supabase -->
+  <script>try { var c = localStorage.getItem("ivory360-chat"); if (c === "closed" || (!c && innerWidth < 1024)) document.documentElement.classList.add("chat-closed"); var p = JSON.parse(localStorage.getItem("ivory360-profile")); if (p) { document.documentElement.classList.add("logged"); if (p.role === "admin" || p.role === "moderator") document.documentElement.classList.add("staff"); } } catch (e) {}</script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="images/favicon.png">
+  <link rel="apple-touch-icon" href="images/favicon.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="with-chat">
+
+  <!-- ========== EN-TÊTE ========== -->
+  <header class="header">
+    <div class="container nav">
+      <a href="index.html" class="logo">
+        <img src="images/logo.png" alt="IVOIR360" width="1728" height="263">
+      </a>
+
+      <nav class="nav-links">
+        <a href="musique.html">Musiques</a>
+        <a href="interviews.html">Interviews</a>
+        <a href="documentaire.html">Documentaires</a>
+        <a href="snapnow.html">SnapNow</a>
+      </nav>
+
+      <div class="nav-actions" id="guestActions">
+        <button class="btn btn-outline" data-open="loginModal">Connexion</button>
+        <button class="btn btn-green" data-open="signupModal">S'inscrire</button>
+      </div>
+
+      <div class="nav-actions hidden" id="userActions">
+        <span class="user-name">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+          <span id="userName"></span>
+        </span>
+        <a class="btn btn-green hidden" id="adminLink" href="admin.html">Admin</a>
+        <button class="btn btn-outline" id="logoutBtn">Déconnexion</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========== EN-TÊTE DE LA PAGE ========== -->
+  <section class="page-hero">
+    <div class="container">
+      <p class="breadcrumb"><a href="index.html">Accueil</a> › Ajouter du contenu</p>
+      <svg class="feature-icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      <h1>Ajouter du contenu</h1>
+      <p>Un clip, une interview, un documentaire ou un SnapNow. Réservé à l'équipe IVOIR360.</p>
+    </div>
+  </section>
+
+  <!-- ========== ACCÈS RÉSERVÉ (visiteurs et membres) ========== -->
+  <section class="section" id="shareLocked">
+    <div class="container">
+      <div class="section-title">
+        <h2>Accès réservé à l'équipe</h2>
+        <p>Seuls les administrateurs et modérateurs peuvent ajouter des vidéos. Connectez-vous avec un compte de l'équipe.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== PARTAGER (visible uniquement pour l'équipe) ========== -->
+  <section class="section section-light hidden" id="partager">
+    <div class="container">
+      <form class="card share-form" id="shareForm">
+        <div class="field">
+          <label for="videoUrl">Lien de la vidéo *</label>
+          <div class="input-icon">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.5.5l3-3a5 5 0 00-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 00-7.5-.5l-3 3a5 5 0 007 7l1.7-1.7"/></svg>
+            <input type="url" id="videoUrl" placeholder="https://www.youtube.com/watch?v=..." required>
+          </div>
+          <small class="hint" id="urlHint">Lien YouTube ou lien d'une vidéo sur un autre site.</small>
+        </div>
+
+        <div class="field">
+          <label for="videoTitle">Titre *</label>
+          <input type="text" id="videoTitle" placeholder="ex. : Artiste — Titre du morceau" maxlength="100" required>
+        </div>
+
+        <div class="field">
+          <label for="videoCategory">Onglet</label>
+          <select id="videoCategory">
+            <option value="Musique">Musiques</option>
+            <option>Interviews</option>
+            <option>Documentaire</option>
+            <option>SnapNow</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="videoDesc">Description</label>
+          <textarea id="videoDesc" rows="3" placeholder="Quelques mots sur la vidéo (facultatif)"></textarea>
+        </div>
+
+        <p class="error" id="shareError"></p>
+        <button type="submit" class="btn btn-green btn-full">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg>
+          Publier la vidéo
+        </button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ========== PIED DE PAGE ========== -->
+  <footer class="footer">
+    <!-- Contact -->
+    <div class="container contact" id="contact">
+      <div>
+        <h3>Contactez-nous</h3>
+        <p>Une question, une suggestion ou un partenariat ? Écrivez à l'équipe <strong>KUMA</strong>.</p>
+      </div>
+      <a class="btn btn-green" href="mailto:kumagrouptxt@gmail.com">
+        <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+        kumagrouptxt@gmail.com
+      </a>
+    </div>
+
+    <div class="container footer-inner">
+      <a href="index.html" class="logo">
+        <img src="images/logo.png" alt="IVOIR360" width="1728" height="263">
+      </a>
+      <div class="footer-links">
+        <a href="#">À propos</a>
+        <a href="#">Conditions d'utilisation</a>
+        <a href="#">Confidentialité</a>
+        <a href="#contact">Contact</a>
+      </div>
+      <small>© <span id="year"></span> iv360.com — KUMA</small>
+    </div>
+  </footer>
+
+  <!-- ========== FENÊTRE : INSCRIPTION ========== -->
+  <div class="modal" id="signupModal">
+    <div class="modal-box">
+      <button class="close" data-close>&times;</button>
+      <h3>Créer un compte</h3>
+      <div class="google-btn"></div>
+      <p class="divider"><span>ou avec votre e-mail</span></p>
+      <form id="signupForm">
+        <div class="field">
+          <label for="signupName">Nom d'utilisateur</label>
+          <input type="text" id="signupName" minlength="3" required>
+        </div>
+        <div class="field">
+          <label for="signupEmail">E-mail</label>
+          <input type="email" id="signupEmail" required>
+        </div>
+        <div class="field">
+          <label for="signupPass">Mot de passe</label>
+          <input type="password" id="signupPass" minlength="8" placeholder="8 caractères minimum" required>
+        </div>
+        <p class="error" id="signupError"></p>
+        <button type="submit" class="btn btn-green btn-full">S'inscrire</button>
+      </form>
+      <p class="switch">Déjà membre ? <a href="#" data-switch="loginModal">Se connecter</a></p>
+    </div>
+  </div>
+
+  <!-- ========== FENÊTRE : CONNEXION ========== -->
+  <div class="modal" id="loginModal">
+    <div class="modal-box">
+      <button class="close" data-close>&times;</button>
+      <h3>Connexion</h3>
+      <div class="google-btn"></div>
+      <p class="divider"><span>ou avec votre e-mail</span></p>
+      <form id="loginForm">
+        <div class="field">
+          <label for="loginEmail">E-mail</label>
+          <input type="email" id="loginEmail" required>
+        </div>
+        <div class="field">
+          <label for="loginPass">Mot de passe</label>
+          <input type="password" id="loginPass" required>
+        </div>
+        <p class="error" id="loginError"></p>
+        <button type="submit" class="btn btn-green btn-full">Se connecter</button>
+      </form>
+      <p class="switch">Pas encore de compte ? <a href="#" data-switch="signupModal">S'inscrire</a></p>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script src="supabase-config.js"></script>
+  <script src="design-anime.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

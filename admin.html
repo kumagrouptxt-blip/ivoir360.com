@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>Tableau de bord — IVOIR360</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="images/favicon.png">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body class="admin">
+
+  <!-- ========== EN-TÊTE ========== -->
+  <header class="header">
+    <div class="container nav">
+      <a href="index.html" class="logo">
+        <img src="images/logo.png" alt="IVOIR360" width="1728" height="263">
+      </a>
+      <span class="admin-title">Tableau de bord</span>
+
+      <div class="nav-actions hidden" id="userActions">
+        <span class="user-name">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+          <span id="userName"></span>
+          <span class="pill" id="userRole"></span>
+        </span>
+        <a class="btn btn-outline" href="index.html">Voir le site</a>
+        <button class="btn btn-outline" id="logoutBtn">Déconnexion</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========== ACCÈS ========== -->
+  <section class="admin-gate hidden" id="setupGate">
+    <div class="card">
+      <h2>Supabase n'est pas configuré</h2>
+      <p>Renseignez l'URL et la clé de votre projet dans <strong>supabase-config.js</strong>, après avoir exécuté <strong>supabase/schema.sql</strong>.</p>
+    </div>
+  </section>
+
+  <section class="admin-gate hidden" id="loginGate">
+    <div class="card">
+      <h2>Espace administration</h2>
+      <p>Connectez-vous avec un compte administrateur ou modérateur.</p>
+      <div class="google-btn"></div>
+      <p class="divider"><span>ou avec votre e-mail</span></p>
+      <form id="loginForm">
+        <div class="field">
+          <label for="loginEmail">E-mail</label>
+          <input type="email" id="loginEmail" required>
+        </div>
+        <div class="field">
+          <label for="loginPass">Mot de passe</label>
+          <input type="password" id="loginPass" required>
+        </div>
+        <p class="error" id="loginError"></p>
+        <button type="submit" class="btn btn-green btn-full">Se connecter</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="admin-gate hidden" id="deniedGate">
+    <div class="card">
+      <h2>Accès refusé</h2>
+      <p>Ce compte n'a pas les droits d'administration. Demandez à un administrateur de vous nommer modérateur ou administrateur.</p>
+      <a class="btn btn-green" href="index.html">Retour au site</a>
+    </div>
+  </section>
+
+  <!-- ========== TABLEAU DE BORD ========== -->
+  <div class="container admin-layout hidden" id="dashboard">
+    <nav class="admin-nav">
+      <button class="tab active" data-panel="stats">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+        Statistiques
+      </button>
+      <button class="tab" data-panel="videos">
+        <svg class="icon" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M10 9l5 3-5 3z"/></svg>
+        Vidéos
+        <span class="count hidden" id="pendingCount"></span>
+      </button>
+      <button class="tab hidden" data-panel="members" data-admin>
+        <svg class="icon" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M1 21c0-4 4-6 8-6s8 2 8 6M17 4a4 4 0 010 8M23 21c0-3-2-5-5-5.5"/></svg>
+        Membres
+      </button>
+      <button class="tab hidden" data-panel="content" data-admin>
+        <svg class="icon" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16zM14 6l4 4"/></svg>
+        Contenu
+      </button>
+      <button class="tab hidden" data-panel="settings" data-admin>
+        <svg class="icon" viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+        Réglages
+      </button>
+    </nav>
+
+    <!-- Statistiques -->
+    <section class="panel" id="panel-stats">
+      <h2>Statistiques</h2>
+      <div class="kpis">
+        <div class="kpi"><span>Membres</span><strong id="kpiMembers">…</strong></div>
+        <div class="kpi"><span>Vidéos publiées</span><strong id="kpiPublished">…</strong></div>
+        <div class="kpi"><span>En attente de validation</span><strong id="kpiPending">…</strong></div>
+        <div class="kpi"><span>Vues au total</span><strong id="kpiViews">…</strong></div>
+      </div>
+
+      <div class="admin-grid">
+        <div class="admin-card">
+          <h3>Par rubrique</h3>
+          <table class="admin-table compact">
+            <thead><tr><th>Rubrique</th><th>Publiées</th><th>En attente</th><th>Vues</th></tr></thead>
+            <tbody id="statsCategories"></tbody>
+          </table>
+        </div>
+        <div class="admin-card">
+          <h3>Les plus vues</h3>
+          <ol class="rank-list" id="statsTop"></ol>
+        </div>
+        <div class="admin-card">
+          <h3>Derniers inscrits</h3>
+          <ul class="rank-list" id="statsMembers"></ul>
+        </div>
+        <div class="admin-card">
+          <h3>Membres par sexe</h3>
+          <ul class="rank-list" id="statsGender"></ul>
+        </div>
+        <div class="admin-card">
+          <h3>Membres par pays</h3>
+          <ul class="rank-list" id="statsCountry"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Vidéos -->
+    <section class="panel hidden" id="panel-videos">
+      <div class="panel-head">
+        <h2>Vidéos</h2>
+        <button class="btn btn-green" id="addVideoBtn">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          Ajouter une vidéo
+        </button>
+      </div>
+      <div class="filters">
+        <div class="search">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5"/></svg>
+          <input type="search" id="videoSearch" placeholder="Titre ou auteur...">
+        </div>
+        <select id="videoStatusFilter">
+          <option value="">Tous les statuts</option>
+          <option value="pending">En attente</option>
+          <option value="published">Publiées</option>
+          <option value="hidden">Masquées</option>
+        </select>
+        <select id="videoCategoryFilter">
+          <option value="">Toutes les rubriques</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table class="admin-table">
+          <thead><tr><th>Vidéo</th><th>Rubrique</th><th>Auteur</th><th>Date</th><th>Vues</th><th>Statut</th><th>Actions</th></tr></thead>
+          <tbody id="videoRows"></tbody>
+        </table>
+      </div>
+      <p class="empty hidden" id="videosEmpty">Aucune vidéo ne correspond.</p>
+    </section>
+
+    <!-- Membres (administrateurs uniquement) -->
+    <section class="panel hidden" id="panel-members">
+      <div class="panel-head">
+        <h2>Membres</h2>
+        <div class="search">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5"/></svg>
+          <input type="search" id="memberSearch" placeholder="Nom ou e-mail...">
+        </div>
+      </div>
+      <p class="panel-hint">Les <strong>modérateurs</strong> gèrent les vidéos et voient les statistiques. Les <strong>administrateurs</strong> ont en plus accès aux membres, au contenu et aux réglages.</p>
+      <div class="table-wrap">
+        <table class="admin-table">
+          <thead><tr><th>Membre</th><th>Sexe</th><th>Pays</th><th>Inscrit le</th><th>Vidéos</th><th>Rôle</th><th>Statut</th><th>Action</th></tr></thead>
+          <tbody id="memberRows"></tbody>
+        </table>
+      </div>
+      <p class="empty hidden" id="membersEmpty">Aucun membre ne correspond.</p>
+    </section>
+
+    <!-- Contenu (administrateurs uniquement) -->
+    <section class="panel hidden" id="panel-content">
+      <h2>Contenu du site</h2>
+      <form class="admin-card" id="contentForm">
+        <div class="field">
+          <label for="announcementInput">Bandeau d'annonce</label>
+          <input type="text" id="announcementInput" maxlength="200" placeholder="Laisser vide pour ne rien afficher">
+          <small class="hint">Affiché en haut de toutes les pages du site.</small>
+        </div>
+        <div id="contentFields"></div>
+        <button type="submit" class="btn btn-green">Enregistrer le contenu</button>
+      </form>
+    </section>
+
+    <!-- Réglages (administrateurs uniquement) -->
+    <section class="panel hidden" id="panel-settings">
+      <h2>Réglages</h2>
+      <form class="admin-card" id="settingsForm">
+        <h3>Publication</h3>
+        <label class="switch-row">
+          <input type="checkbox" id="moderationInput">
+          <span>
+            <strong>Valider les vidéos avant publication</strong>
+            <small>Les vidéos partagées par les membres restent « En attente » jusqu'à leur validation.</small>
+          </span>
+        </label>
+
+        <h3>Rubriques actives</h3>
+        <p class="panel-hint">Une rubrique désactivée disparaît du menu et sa page n'est plus accessible.</p>
+        <div id="categoryToggles"></div>
+
+        <button type="submit" class="btn btn-green">Enregistrer les réglages</button>
+      </form>
+    </section>
+  </div>
+
+  <!-- ========== FENÊTRE : AJOUT / MODIFICATION D'UNE VIDÉO ========== -->
+  <div class="modal" id="videoModal">
+    <div class="modal-box">
+      <button class="close" data-close>&times;</button>
+      <h3 id="videoModalTitle">Modifier la vidéo</h3>
+      <form id="videoForm">
+        <div class="field">
+          <label for="videoUrl">Lien de la vidéo *</label>
+          <input type="url" id="videoUrl" required>
+        </div>
+        <div class="field">
+          <label for="videoTitle">Titre *</label>
+          <input type="text" id="videoTitle" maxlength="100" required>
+        </div>
+        <div class="field">
+          <label for="videoCategory">Rubrique</label>
+          <select id="videoCategory"></select>
+        </div>
+        <div class="field">
+          <label for="videoAuthor">Nom de l'auteur affiché</label>
+          <input type="text" id="videoAuthor" required>
+        </div>
+        <div class="field">
+          <label for="videoDesc">Description</label>
+          <textarea id="videoDesc" rows="3"></textarea>
+        </div>
+        <div class="field">
+          <label for="videoStatus">Statut</label>
+          <select id="videoStatus">
+            <option value="published">Publiée</option>
+            <option value="pending">En attente</option>
+            <option value="hidden">Masquée</option>
+          </select>
+        </div>
+        <label class="switch-row">
+          <input type="checkbox" id="videoFeatured">
+          <span><strong>À la une</strong><small>Affichée en premier sur le site.</small></span>
+        </label>
+        <p class="error" id="videoError"></p>
+        <button type="submit" class="btn btn-green btn-full">Enregistrer</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script src="supabase-config.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
